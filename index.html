@@ -4,47 +4,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Кофемастер Pro</title>
+  <title>Кофемастер PRO — частный мастер</title>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 24px;
-      font-family: Arial, sans-serif;
+      padding: 25px 16px;
       background: #151515;
-      color: white;
+      color: #f5f5f5;
+      font-family: Arial, sans-serif;
       text-align: center;
     }
-    .card {
-      max-width: 400px;
-      margin: 40px auto;
-      padding: 24px;
-      background: #252525;
-      border-radius: 16px;
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
     }
-    h1 { color: #f0a040; }
-    p { line-height: 1.6; }
-    a {
+
+    .master-banner {
       display: block;
-      margin-top: 16px;
-      padding: 14px;
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      border: 1px solid #c88929;
+      box-shadow: 0 0 25px rgba(232, 173, 80, 0.2);
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: #f0a040;
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #d0d0d0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 15px 28px;
       background: #f0a040;
       color: #151515;
       text-decoration: none;
-      border-radius: 10px;
       font-weight: bold;
+      border-radius: 10px;
+    }
+
+    .button:hover {
+      background: #ffc36b;
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>Кофемастер Pro</h1>
-    <p>Ремонт и обслуживание кофемашин в Москве.</p>
-    <p>Выезд к клиенту. Диагностика, ремонт,
-    профилактика и обслуживание автоматических
-    и вендинговых кофемашин.</p>
-    <a href="https://max.ru/channel_kofemaster">
-      Наш канал MAX
+  <main class="container">
+
+    <img
+      src="/kofemaster-banner.png"
+      alt="Кофемастер PRO — частный мастер по ремонту кофемашин"
+      class="master-banner"
+    >
+
+    <h1>Кофемастер PRO</h1>
+
+    <p>
+      Частный мастер по ремонту и обслуживанию
+      автоматических кофемашин и вендингового оборудования.
+    </p>
+
+    <p>
+      Работаю лично. Выезжаю к клиенту в Москве.
+      Ремонт и обслуживание на месте.
+      Гарантия на выполненные ремонтные работы.
+    </p>
+
+    <a
+      class="button"
+      href="https://max.ru/channel_kofemaster"
+      target="_blank"
+    >
+      Связаться с мастером
     </a>
-  </div>
+
+  </main>
 </body>
 </html>

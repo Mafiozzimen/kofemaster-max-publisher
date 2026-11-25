@@ -17,10 +17,19 @@ export default async function handler(req, res) {
 <input id="s" type="password" required autocomplete="off" placeholder="PUBLISHER_SECRET" style="display:block;width:100%;padding:12px;box-sizing:border-box;margin:8px 0 16px">
 <label>Текст поста</label>
 <textarea id="t" required maxlength="4000" rows="8" placeholder="Текст публикации..." style="display:block;width:100%;padding:12px;box-sizing:border-box;margin:8px 0"></textarea>
-<button style="padding:12px 18px">Опубликовать в канал</button>
+<button type="button" id="check" style="padding:12px 18px;margin:0 8px 12px 0">Проверить подключение</button><button style="padding:12px 18px">Опубликовать в канал</button>
 </form>
 <pre id="r" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre>
 <script>
+document.getElementById("check").addEventListener("click", async () => {
+ const out=document.getElementById("r");
+ out.textContent="Проверяю токен, сертификат и доступ к каналу...";
+ try {
+  const response=await fetch("/api/diagnostics",{headers:{"x-publisher-secret":document.getElementById("s").value}});
+  const data=await response.json();
+  out.textContent=JSON.stringify(data,null,2);
+ } catch(err){out.textContent="Ошибка соединения: "+err.message}
+});
 document.getElementById("f").addEventListener("submit", async e => {
  e.preventDefault();
  const out=document.getElementById("r");

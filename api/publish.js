@@ -1,3 +1,8 @@
+import https from "node:https";
+import fs from "node:fs";
+import path from "node:path";
+import tls from "node:tls";
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -54,22 +59,55 @@ document.getElementById("f").addEventListener("submit", async e => {
   if (!postText) return res.status(400).json({ ok: false, error: "Enter post text" });
   if (postText.length > 4000) return res.status(400).json({ ok: false, error: "Text exceeds 4000 characters" });
 
+  const certificatePath = path.join(process.cwd(), "certs", "russian_trusted_root_ca.pem");
+  let customCertificate;
   try {
-    const url = new URL("https://platform-api2.max.ru/messages");
-    url.searchParams.set("chat_id", channelId);
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { Authorization: token, "Content-Type": "application/json" },
-      body: JSON.stringify({ text: postText })
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      console.error("MAX publish rejected:", response.status, payload);
-      return res.status(502).json({ ok: false, error: "MAX API rejected the post", max_status: response.status, details: payload });
-    }
-    return res.status(200).json({ ok: true, message: "Post sent to MAX channel", result: payload });
+    customCertificate = fs.readFileSync(certificatePath, "utf8");
   } catch (error) {
-    console.error("MAX publish error:", error.message);
-    return res.status(502).json({ ok: false, error: "Could not reach MAX API", details: error.message });
+    console.error("MAX certificate load error:", error.message);
+    return res.status(500).json({ ok: false, error: "Cannot load MAX trusted certificate", details: error.message });
+  }
+
+  const agent = new https.Agent({ ca: [...tls.rootCertificates, customCertificate], keepAlive: true });
+  const requestBody = JSON.stringify({ text: postText });
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const request = https.request({
+        hostname: "platform-api2.max.ru",
+        path: "/messages?chat_id=" + encodeURIComponent(channelId),
+        method: "POST",
+        agent,
+        headers: {
+          Authorization: token,
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(requestBody)
+        },
+        timeout: 20000
+      }, response => {
+        let data = "";
+        response.setEncoding("utf8");
+        response.on("data", chunk => { data += chunk; });
+        response.on("end", () => {
+          let parsed;
+          try { parsed = JSON.parse(data); } catch { parsed = { response: data }; }
+          resolve({ status: response.statusCode, data: parsed });
+        });
+      });
+      request.on("timeout", () => request.destroy(new Error("MAX API timeout")));
+      request.on("error", reject);
+      request.write(requestBody);
+      request.end();
+    });
+    agent.destroy();
+    if (result.status < 200 || result.status >= 300) {
+      console.error("MAX publish rejected:", result.status, result.data);
+      return res.status(502).json({ ok: false, error: "MAX API rejected the post", max_status: result.status, details: result.data });
+    }
+    return res.status(200).json({ ok: true, message: "Post sent to MAX channel", result: result.data });
+  } catch (error) {
+    agent.destroy();
+    console.error("MAX publish connection error:", { message: error.message, code: error.code });
+    return res.status(502).json({ ok: false, error: "Could not reach MAX API", details: error.message, code: error.code || null });
   }
 }

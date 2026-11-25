@@ -40,10 +40,14 @@ document.getElementById("f").addEventListener("submit", async e => {
     return res.status(401).json({ ok: false, error: "Unauthorized: check PUBLISHER_SECRET" });
   }
 
-  const token = process.env.MAX_BOT_TOKEN;
-  const channelId = process.env.MAX_CHANNEL_ID;
+  const token = process.env.MAX_BOT_TOKEN?.trim();
+  const channelId = process.env.MAX_CHANNEL_ID?.trim();
   if (!token || !channelId) {
-    return res.status(500).json({ ok: false, error: "Missing MAX_BOT_TOKEN or MAX_CHANNEL_ID environment variable in Vercel" });
+    const missing = [];
+    if (!token) missing.push("MAX_BOT_TOKEN");
+    if (!channelId) missing.push("MAX_CHANNEL_ID");
+    console.error("MAX publish configuration missing:", missing.join(", "));
+    return res.status(500).json({ ok: false, error: "Vercel runtime is missing these Production variables: " + missing.join(", "), missing });
   }
 
   const postText = typeof req.body?.text === "string" ? req.body.text.trim() : "";
